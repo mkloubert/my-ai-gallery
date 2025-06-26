@@ -5,29 +5,30 @@ services:
       dockerfile: Dockerfile
     # ports:
       # - "5173:5173"
-    volumes:
-      - ./frontend:/app
-      # - /app/node_modules # do not overwrite node_modules by volume
     command: sh -c "npm install --force && npm run dev -- --host"
     env_file:
       - ./.env
       - ./.env.local
       - ./frontend/.env
       - ./frontend/.env.local
-
+    volumes:
+      - ./frontend:/app
+      # - /app/node_modules # do not overwrite node_modules by volume
+  
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
     # ports:
       # - "8080:8080"
-    volumes:
-      - ./backend:/app
     env_file:
       - ./.env
       - ./.env.local
       - ./backend/.env
       - ./backend/.env.local
+    volumes:
+      - ./backend:/app
+      - ${MAIG_IMAGES}:/app/images
 
   nginx:
     image: nginx:1.29.0-alpine3.22

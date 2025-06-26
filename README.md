@@ -4,7 +4,11 @@
 
 ## Before you start
 
-First create the following `.env.local` files:
+First provide following environment variables:
+
+- `MAIG_IMAGES`: root folder of your media files
+
+Then create the following `.env.local` files:
 
 - [.env.local](./.env.local)
 - [backend/.env.local](./backend/.env.local)
@@ -13,5 +17,9 @@ First create the following `.env.local` files:
 ## Run
 
 ```bash
+# if required: full re-build
+# docker-compose build --no-cache
+
+# start
 docker-compose up --build
 ```

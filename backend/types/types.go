@@ -20,34 +20,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-package main
+package types
 
-import (
-	"fmt"
-	"net/http"
-	"os"
+import "net/http"
 
-	"github.com/gorilla/mux"
-	"github.com/mkloubert/my-ai-gallery/routes"
-	"github.com/mkloubert/my-ai-gallery/types"
-)
-
-func main() {
-	cwd, err := os.Getwd()
-	if err != nil {
-		panic(err)
-	}
-
-	app := &types.AppContext{
-		EOL:              fmt.Sprintln(),
-		Stderr:           os.Stderr,
-		Stdout:           os.Stdout,
-		WorkingDirectory: cwd,
-	}
-
-	r := mux.NewRouter()
-	r.HandleFunc("/api/images", routes.CreateHandleGetImagesHandler(app)).Methods("GET")
-	r.HandleFunc("/api/images/{imagename}", routes.CreateHandleGetImageHandler(app)).Methods("GET")
-
-	http.ListenAndServe(":8080", r)
-}
+// HttpHandlerFunc is a shorthand for HTTP handler function.
+type HttpHandlerFunc = func(w http.ResponseWriter, r *http.Request)

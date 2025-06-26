@@ -1,5 +1,7 @@
 FROM golang:1.24-alpine3.22
 
+RUN apk add --no-cache gcc musl-dev
+
 WORKDIR /app
 
 # Air installieren

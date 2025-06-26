@@ -20,36 +20,52 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-package main
+package types
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
-	"strings"
+
+	"database/sql"
+
+	_ "github.com/mattn/go-sqlite3"
 )
 
+// AppContext stores information and provides features for handling
+// the current application.
+type AppContext struct {
+	// EOL the char sequence for new lines.
+	EOL string
+	// Stderr is the standard error stream.
+	Stderr *os.File
+	// Stdout is the standard output stream.
+	Stdout *os.File
+	// WorkingDirectory stores the full path of the working directory.
+	WorkingDirectory string
+}
+
 // GetImageFolder returns the full path of the image root folder.
-func GetImageFolder() (string, error) {
-	cwd, err := os.Getwd()
-	if err != nil {
-		return cwd, err
-	}
+func (app *AppContext) GetImageFolder() string {
+	return filepath.Join(app.WorkingDirectory, "images")
+}
 
-	MAIG_IMAGES := strings.TrimSpace(os.Getenv("MAIG_IMAGES"))
-	if MAIG_IMAGES == "" {
-		MAIG_IMAGES = "./images"
-	}
+// OpenImageDatabase open image SQL database.
+func (app *AppContext) OpenImageDatabase() (*sql.DB, error) {
+	imageFolder := app.GetImageFolder()
+	databaseFile := filepath.Join(imageFolder, "images.db")
 
-	if !filepath.IsAbs(MAIG_IMAGES) {
-		MAIG_IMAGES = filepath.Join(cwd, MAIG_IMAGES)
-	}
-
-	return MAIG_IMAGES, nil
+	return sql.Open("sqlite3", databaseFile)
 }
 
 // SendHttpError sends an error as 500 HTTP response.
-func SendHttpError(err error, w http.ResponseWriter) {
+func (app *AppContext) SendHttpError(err error, w http.ResponseWriter) {
+	fmt.Fprintf(app.Stderr,
+		"[HTTP ERROR]: %s%s",
+		err.Error(), app.EOL,
+	)
+
 	w.WriteHeader(500)
 	w.Header().Set("Content-Type", "text/plain; charset=UTF-8")
 
