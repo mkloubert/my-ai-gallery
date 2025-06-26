@@ -26,17 +26,19 @@
   import Modal from "./Modal.svelte";
   import type { ApiImage } from "./types";
 
+  export let onTagClick: (tag: string) => void;
   export let image: ApiImage;
 
   let detailsToShow: string | null = null;
   let menuOpen = false;
+  let tags: string[] = [];
 
-  function handleBlur(event: any) {
+  const handleBlur = (event: any) => {
     // check if focus is outside
     if (!event.currentTarget.contains(event.relatedTarget)) {
       menuOpen = false;
     }
-  }
+  };
 
   const doDownload = () => {
     menuOpen = false;
@@ -50,6 +52,18 @@
     detailsToShow =
       image.info?.description || image.info?.title || image.name || "";
   };
+
+  onMount(() => {
+    const allTags: string[] = (image.info?.tags ?? [])
+      .flatMap((t) => {
+        return t.split(",").map((t2) => t2.trim());
+      })
+      .filter((t) => {
+        return t != "";
+      });
+
+    tags = [...new Set(allTags)].sort();
+  });
 </script>
 
 <div
@@ -66,10 +80,27 @@
     src={image.url}
   />
 
+  {#if tags.length}
+    <div
+      class="absolute bottom-2 left-2 flex flex-wrap gap-1"
+      style="z-index: 10;"
+    >
+      {#each tags as tag}
+        <span
+          class="cursor-pointer px-2 py-0.5 text-xs rounded-full bg-white/80 dark:bg-gray-800/80 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-700 shadow"
+              on:click={() => onTagClick(tag)}
+          >
+          {tag}
+        </span>
+      {/each}
+    </div>
+  {/if}
+
   <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
   <div class="absolute bottom-2 right-2 z-10" tabindex="0" on:blur={handleBlur}>
     <button
       class="bg-black/40 text-white rounded-full p-2 hover:bg-black/70 focus:outline-none cursor-pointer"
+      style="z-index: 20;"
       on:click={() => (menuOpen = !menuOpen)}
       aria-label="Context menu"
       tabindex="0"
@@ -105,7 +136,7 @@
     detailsToShow = null;
   }}
   open={!!detailsToShow}
-  title={image.name}
+  title={image.info?.title || image.name}
 >
   {detailsToShow}
 </Modal>

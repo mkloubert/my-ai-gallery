@@ -21,18 +21,31 @@
   // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   // SOFTWARE.
 
-  import { onMount } from "svelte";
+  import { onDestroy, onMount } from "svelte";
   import type { ApiImage, GalleryImage } from "./lib/types";
   import ImageCard from "./lib/ImageCard.svelte";
   import Search from "./assets/Search.svelte";
   import { toSearchValue } from "./lib/utils";
+  import ArrowUp from "./assets/ArrowUp.svelte";
 
   let debounceTimeout: any;
   let isLoading = true;
   let allImages: GalleryImage[] = [];
   let filteredImages: GalleryImage[] = [];
   let searchParts: string[] = [];
-  let searchValue = "";
+  $: searchValue = "";
+
+  let page = 1;
+  const pageSize = 100;
+  $: visibleImages = filteredImages.slice(0, page * pageSize);
+
+  let sentinelObserver!: IntersectionObserver;
+  let sentinel: any;
+
+  let showScrollTop = false;
+  let topMarker: any;
+
+  let inputEl: any;
 
   const fetchImages = async () => {
     isLoading = true;
@@ -70,13 +83,17 @@
       refreshList();
     } finally {
       isLoading = false;
+
+      setTimeout(() => {
+        requestAnimationFrame(() => {
+          refreshSentinalObserver();
+        });
+      }, 100);
     }
   };
 
   const handleSearchValueChange = (e: any) => {
-    searchValue = (e.target as HTMLInputElement).value;
-
-    rebuildSearchParts();
+    updateSearchValue((e.target as HTMLInputElement).value);
   };
 
   const rebuildSearchParts = () => {
@@ -92,8 +109,6 @@
   };
 
   const refreshList = () => {
-    console.log("refreshList", searchParts);
-
     if (searchParts.length === 0) {
       filteredImages = allImages;
       return;
@@ -104,13 +119,80 @@
         return img.searchContext.includes(sp);
       });
     });
+
+    page = 1;
   };
 
+  function loadMore() {
+    if (visibleImages.length < filteredImages.length) {
+      page += 1;
+    }
+  }
+
+  const refreshSentinalObserver = () => {
+    sentinelObserver?.disconnect();
+
+    sentinelObserver = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          loadMore();
+        }
+      },
+      { threshold: 1 }
+    );
+
+    if (sentinel) {
+      sentinelObserver.observe(sentinel);
+    }
+  };
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    inputEl?.focus();
+  };
+
+  const updateSearchValue = (v: unknown) => {
+    searchValue = String(v ?? "");
+
+    rebuildSearchParts();
+  };
+
+  const updateSearchValueWithTag = (tag: string) => {
+    tag = tag.toLowerCase().trim();
+    if (!tag) {
+      return;
+    }
+
+    if (searchValue.toLowerCase().includes(tag)) {
+      return;
+    }
+
+    updateSearchValue(searchValue.trim() + " " + tag);
+  };
+
+
   onMount(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        showScrollTop = !entry.isIntersecting;
+      },
+      { threshold: 0 }
+    );
+    observer.observe(topMarker);
+
     fetchImages().catch(console.error);
+
+    return () => {
+      observer.disconnect();
+    };
   });
 
-  $: if (searchValue) {
+  onDestroy(() => {
+    sentinelObserver?.disconnect();
+  });
+
+  $: if (searchValue || !searchValue) {
     clearTimeout(debounceTimeout);
 
     debounceTimeout = setTimeout(() => {
@@ -118,6 +200,8 @@
     }, 300);
   }
 </script>
+
+<div bind:this={topMarker} style="height: 1px;"></div>
 
 {#if isLoading}
   <div class="flex justify-center items-center w-full h-lvh">
@@ -139,15 +223,38 @@
         oninput={handleSearchValueChange}
         autofocus
         disabled={isLoading}
+        value={searchValue}
+        bind:this={inputEl}
       />
     </div>
   </div>
 
-  <div
-    class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 p-4"
-  >
-    {#each filteredImages as image}
-      <ImageCard image={image.apiImage} />
-    {/each}
+  <div class="py-2 w-full justify-center items-center flex text-sm">
+    {filteredImages.length} found
   </div>
+
+  {#if filteredImages.length > 0}
+    <div
+      class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 p-4"
+    >
+      {#each visibleImages as image}
+        <ImageCard
+          image={image.apiImage}
+          onTagClick={updateSearchValueWithTag}
+        />
+      {/each}
+
+      <div bind:this={sentinel}></div>
+    </div>
+  {/if}
+{/if}
+
+{#if showScrollTop}
+  <button
+    class="cursor-pointer fixed bottom-6 right-6 z-50 bg-gray-900/70 hover:bg-gray-900/90 text-white p-3 rounded-full shadow-lg transition-opacity opacity-70 hover:opacity-100 backdrop-blur"
+    onclick={scrollToTop}
+    aria-label="Scoll to top"
+  >
+    <ArrowUp />
+  </button>
 {/if}
