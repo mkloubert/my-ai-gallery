@@ -1,0 +1,17 @@
+# for more information: github.com/mkloubert/gai
+
+defaults:
+  flags:
+    file:
+      - "backend/go.mod"
+    files:
+      - "/backend/*.go"
+      - "/backend/*.md"
+      - "/frontend/src/*.css"
+      - "/frontend/src/*.ts"
+      - "/frontend/src/*.svelte"
+      - "/README.md"
+      - ".env"
+      - "!/frontend/src/*.d.ts"
+      - "!/frontend/node_modules/**/*"
+      - "!.env.local"
