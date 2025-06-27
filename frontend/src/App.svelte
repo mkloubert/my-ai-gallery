@@ -145,6 +145,10 @@
     }
   };
 
+  const refreshView = () => {
+    visibleImages = [...visibleImages];
+  };
+
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
 
@@ -244,6 +248,7 @@
             currentCarouselIndex = imageIndex;
           }}
           onTagClick={updateSearchValueWithTag}
+          onUpdate={refreshView}
         />
       {/each}
 

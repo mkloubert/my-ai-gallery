@@ -20,35 +20,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-package main
+package types
 
-import (
-	"fmt"
-	"net/http"
-	"os"
-
-	"github.com/gorilla/mux"
-	"github.com/mkloubert/my-ai-gallery/routes"
-	"github.com/mkloubert/my-ai-gallery/types"
-)
-
-func main() {
-	cwd, err := os.Getwd()
-	if err != nil {
-		panic(err)
-	}
-
-	app := &types.AppContext{
-		EOL:              fmt.Sprintln(),
-		Stderr:           os.Stderr,
-		Stdout:           os.Stdout,
-		WorkingDirectory: cwd,
-	}
-
-	r := mux.NewRouter()
-	r.HandleFunc("/api/images", routes.CreateGetImagesHandler(app)).Methods("GET")
-	r.HandleFunc("/api/images/{imagename}", routes.CreateGetImageHandler(app)).Methods("GET")
-	r.HandleFunc("/api/images/{imagename}/meta", routes.CreateUpdateImageMetaHandler(app)).Methods("PATCH")
-
-	http.ListenAndServe(":8080", r)
+// OllamaApiCompletionResponse is the data of a successful completion response.
+type OllamaApiCompletionResponse struct {
+	// Model stores the model that has been used.
+	Model string `json:"model,omitempty"`
+	// Response stores the messagefrom assistant.
+	Response string `json:"response,omitempty"`
 }

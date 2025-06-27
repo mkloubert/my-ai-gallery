@@ -51,6 +51,7 @@
 </script>
 
 {#if open}
+  <!-- svelte-ignore a11y_click_events_have_key_events -->
   <div
     class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
     on:click={() => onClose()}
@@ -58,6 +59,7 @@
     aria-modal="true"
     role="dialog"
   >
+    <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div
       class="bg-white rounded-lg shadow-xl max-w-lg w-full p-6 relative"
       on:click|stopPropagation
@@ -73,6 +75,12 @@
         <h2 class="text-xl font-bold mb-4">{title}</h2>
       {/if}
       <slot />
+
+      {#if $$slots.actions}
+        <div class="w-full flex justify-center mt-8">
+          <slot name="actions" />
+        </div>
+      {/if}
     </div>
   </div>
 {/if}

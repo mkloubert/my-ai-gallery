@@ -23,7 +23,7 @@
 
   import { onMount } from "svelte";
 
-  import type { ApiImage } from "./types";
+  import type { ApiImage, UpdateImageMetaDataResponse } from "./types";
 
   import ThreeDots from "../assets/ThreeDots.svelte";
   import Modal from "./Modal.svelte";
@@ -31,8 +31,9 @@
   export let image: ApiImage;
   export let onImageClick: () => void;
   export let onTagClick: (tag: string) => void;
+  export let onUpdate: () => void;
 
-  let detailsToShow: string | null = null;
+  let isUpdatingMeta = false;
   let menuOpen = false;
   let tags: string[] = [];
 
@@ -49,11 +50,52 @@
     window.open(image.url, "_blank");
   };
 
+  const doMetaUpdate = async () => {
+    isUpdatingMeta = true;
+
+    try {
+      const response = await fetch(
+        `/api/images/${encodeURIComponent(image.name)}/meta`,
+        {
+          method: "PATCH",
+        }
+      );
+
+      if (response.status !== 200) {
+        const text = await response.text();
+
+        throw new Error(`Unexpected response ${response.status}: ${text}`);
+      }
+
+      const data: UpdateImageMetaDataResponse = await response.json();
+
+      image.info = {
+        description: data.image_information.detailed_description,
+        tags: [...data.image_information.tags],
+        title: data.image_information.title,
+      };
+
+      updateDetails();
+
+      onUpdate();
+    } catch (error) {
+      alert(`Could not update meta: ${error}`);
+    } finally {
+      isUpdatingMeta = false;
+    }
+  };
+
   const showDetails = () => {
     menuOpen = false;
 
+    updateDetails();
+  };
+
+  const updateDetails = () => {
     detailsToShow =
       image.info?.description || image.info?.title || image.name || "";
+
+    title = image.info?.title || image.name;
   };
 
   onMount(() => {
@@ -67,6 +109,9 @@
 
     tags = [...new Set(allTags)].sort();
   });
+
+  $: detailsToShow = "";
+  $: title = image.info?.title || image.name;
 </script>
 
 <div
@@ -141,10 +186,22 @@
 
 <Modal
   onClose={() => {
-    detailsToShow = null;
+    detailsToShow = "";
   }}
   open={!!detailsToShow}
-  title={image.info?.title || image.name}
+  {title}
 >
-  {detailsToShow}
+  <div class="w-full">
+    {detailsToShow}
+  </div>
+
+  <div slot="actions" class="w-full">
+    <button
+      disabled={isUpdatingMeta}
+      class={`px-3 py-1 rounded ${isUpdatingMeta ? "bg-gray-500": "bg-blue-500"} text-white cursor-pointer w-full ${isUpdatingMeta ? "italic" : ""}`}
+      on:click={doMetaUpdate}
+    >
+      {isUpdatingMeta ? "Updating ..." : "Update"}
+    </button>
+  </div>
 </Modal>

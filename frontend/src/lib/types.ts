@@ -64,3 +64,26 @@ export interface GalleryImage {
    */
   searchContext: string;
 }
+
+/**
+ * Reponse of a PATCH API call for updating image meta data.
+ */
+export interface UpdateImageMetaDataResponse {
+  /**
+   * The information information.
+   */
+  image_information: {
+    /**
+     * The detailed description.
+     */
+    detailed_description: string;
+    /**
+     * The list of tags.
+     */
+    tags: string[];
+    /**
+     * The title.
+     */
+    title: string;
+  };
+}

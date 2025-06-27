@@ -56,7 +56,34 @@ func (app *AppContext) OpenImageDatabase() (*sql.DB, error) {
 	imageFolder := app.GetImageFolder()
 	databaseFile := filepath.Join(imageFolder, "images.db")
 
-	return sql.Open("sqlite3", databaseFile)
+	db, err := sql.Open("sqlite3", databaseFile)
+	if err != nil {
+		return db, err
+	}
+
+	createTable := `CREATE TABLE IF NOT EXISTS images (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  file_path TEXT NOT NULL,
+  last_filesize INTEGER NOT NULL,
+  last_modified DATETIME NOT NULL,
+  title TEXT NOT NULL,
+  description TEXT NOT NULL,
+  tags TEXT NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
+  updated_at DATETIME
+);`
+	_, err = db.Exec(createTable)
+	if err != nil {
+		return db, err
+	}
+
+	createIndex := `CREATE UNIQUE INDEX IF NOT EXISTS idx_images_file_path ON images(file_path);`
+	_, err = db.Exec(createIndex)
+	if err != nil {
+		return db, err
+	}
+
+	return db, nil
 }
 
 // SendHttpError sends an error as 500 HTTP response.
