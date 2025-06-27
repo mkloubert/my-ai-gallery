@@ -185,7 +185,7 @@
 </div>
 
 <Modal
-  onClose={() => {
+  onClose={isUpdatingMeta ? null : () => {
     detailsToShow = "";
   }}
   open={!!detailsToShow}

@@ -24,7 +24,7 @@
   import { onMount } from "svelte";
   import X from "../assets/X.svelte";
 
-  export let onClose: () => void;
+  export let onClose: (() => void) | null;
   export let open = false;
   export let title = "";
 
@@ -37,7 +37,7 @@
     if (e.key === "Escape") {
       e.preventDefault();
 
-      onClose();
+      onClose?.();
     }
   };
 
@@ -54,7 +54,7 @@
   <!-- svelte-ignore a11y_click_events_have_key_events -->
   <div
     class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-    on:click={() => onClose()}
+    on:click={() => onClose?.()}
     tabindex="-1"
     aria-modal="true"
     role="dialog"
@@ -64,13 +64,15 @@
       class="bg-white rounded-lg shadow-xl max-w-lg w-full p-6 relative"
       on:click|stopPropagation
     >
-      <button
-        class="absolute top-3 right-3 text-gray-400 hover:text-gray-700 cursor-pointer"
-        aria-label="Close"
-        on:click={() => onClose()}
-      >
-        <X />
-      </button>
+      {#if onClose}
+        <button
+          class="absolute top-3 right-3 text-gray-400 hover:text-gray-700 cursor-pointer"
+          aria-label="Close"
+          on:click={() => onClose?.()}
+        >
+          <X />
+        </button>
+      {/if}
       {#if title}
         <h2 class="text-xl font-bold mb-4">{title}</h2>
       {/if}
