@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { onMount } from "svelte";
   // MIT License
   //
   // Copyright (c) 2025 Marcel Joachim Kloubert (https://marcel.coffee)
@@ -22,12 +21,16 @@
   // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   // SOFTWARE.
 
-  import ThreeDots from "../assets/ThreeDots.svelte";
-  import Modal from "./Modal.svelte";
+  import { onMount } from "svelte";
+
   import type { ApiImage } from "./types";
 
-  export let onTagClick: (tag: string) => void;
+  import ThreeDots from "../assets/ThreeDots.svelte";
+  import Modal from "./Modal.svelte";
+
   export let image: ApiImage;
+  export let onImageClick: () => void;
+  export let onTagClick: (tag: string) => void;
 
   let detailsToShow: string | null = null;
   let menuOpen = false;
@@ -69,8 +72,10 @@
 <div
   class="relative aspect-w-1 aspect-h-1 w-full overflow-hidden rounded-xl shadow bg-gray-100 group"
 >
+  <!-- svelte-ignore a11y_click_events_have_key_events -->
+  <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
   <img
-    class="object-cover w-full h-full transition-transform duration-200 hover:scale-105"
+    class="cursor-pointer object-cover w-full h-full transition-transform duration-200 hover:scale-105"
     alt={image.info?.description ||
       image.info?.title ||
       image.name ||
@@ -78,6 +83,7 @@
     title={image.info?.title || image.name || undefined}
     loading="lazy"
     src={image.url}
+    on:click={() => onImageClick()}
   />
 
   {#if tags.length}
@@ -86,10 +92,12 @@
       style="z-index: 10;"
     >
       {#each tags as tag}
+        <!-- svelte-ignore a11y_click_events_have_key_events -->
+        <!-- svelte-ignore a11y_no_static_element_interactions -->
         <span
           class="cursor-pointer px-2 py-0.5 text-xs rounded-full bg-white/80 dark:bg-gray-800/80 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-700 shadow"
-              on:click={() => onTagClick(tag)}
-          >
+          on:click={() => onTagClick(tag)}
+        >
           {tag}
         </span>
       {/each}

@@ -22,30 +22,29 @@
   // SOFTWARE.
 
   import { onDestroy, onMount } from "svelte";
+
   import type { ApiImage, GalleryImage } from "./lib/types";
-  import ImageCard from "./lib/ImageCard.svelte";
-  import Search from "./assets/Search.svelte";
   import { toSearchValue } from "./lib/utils";
+
   import ArrowUp from "./assets/ArrowUp.svelte";
+  import ImageCard from "./lib/ImageCard.svelte";
+  import ImageCarouselModal from "./lib/ImageCarouselModal.svelte";
+  import Search from "./assets/Search.svelte";
 
-  let debounceTimeout: any;
-  let isLoading = true;
-  let allImages: GalleryImage[] = [];
-  let filteredImages: GalleryImage[] = [];
-  let searchParts: string[] = [];
-  $: searchValue = "";
-
-  let page = 1;
   const pageSize = 100;
-  $: visibleImages = filteredImages.slice(0, page * pageSize);
 
-  let sentinelObserver!: IntersectionObserver;
+  let allImages: GalleryImage[] = [];
+  let currentCarouselIndex: number | null = null;
+  let debounceTimeout: any;
+  let filteredImages: GalleryImage[] = [];
+  let inputEl: any;
+  let isLoading = true;
+  let page = 1;
+  let searchParts: string[] = [];
   let sentinel: any;
-
+  let sentinelObserver!: IntersectionObserver;
   let showScrollTop = false;
   let topMarker: any;
-
-  let inputEl: any;
 
   const fetchImages = async () => {
     isLoading = true;
@@ -96,6 +95,12 @@
     updateSearchValue((e.target as HTMLInputElement).value);
   };
 
+  const loadMore = () => {
+    if (visibleImages.length < filteredImages.length) {
+      page += 1;
+    }
+  };
+
   const rebuildSearchParts = () => {
     searchParts = [
       ...new Set<string>(
@@ -123,12 +128,6 @@
     page = 1;
   };
 
-  function loadMore() {
-    if (visibleImages.length < filteredImages.length) {
-      page += 1;
-    }
-  }
-
   const refreshSentinalObserver = () => {
     sentinelObserver?.disconnect();
 
@@ -147,7 +146,7 @@
   };
 
   const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: "smooth" });
 
     inputEl?.focus();
   };
@@ -171,7 +170,6 @@
     updateSearchValue(searchValue.trim() + " " + tag);
   };
 
-
   onMount(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -192,6 +190,8 @@
     sentinelObserver?.disconnect();
   });
 
+  $: searchValue = "";
+  $: visibleImages = filteredImages.slice(0, page * pageSize);
   $: if (searchValue || !searchValue) {
     clearTimeout(debounceTimeout);
 
@@ -237,9 +237,12 @@
     <div
       class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 p-4"
     >
-      {#each visibleImages as image}
+      {#each visibleImages as image, imageIndex}
         <ImageCard
           image={image.apiImage}
+          onImageClick={() => {
+            currentCarouselIndex = imageIndex;
+          }}
           onTagClick={updateSearchValueWithTag}
         />
       {/each}
@@ -258,3 +261,12 @@
     <ArrowUp />
   </button>
 {/if}
+
+<ImageCarouselModal
+  images={visibleImages}
+  onClose={() => {
+    currentCarouselIndex = null;
+  }}
+  start={currentCarouselIndex ?? 0}
+  open={typeof currentCarouselIndex === "number"}
+/>

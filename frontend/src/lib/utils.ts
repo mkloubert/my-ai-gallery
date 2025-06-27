@@ -20,6 +20,42 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+import type { ApiImage, GalleryImage } from "./types";
+
+/**
+ * Returns the props for an <img /> html tag for an API image.
+ *
+ * @param {ApiImage|null|undefined} image The input image.
+ *
+ * @returns {Record<string,any>} The props for the tag.
+ */
+export function getImgPropsFromApiImage(
+  image: ApiImage | null | undefined
+): Record<string, any> {
+  if (!image) {
+    return {};
+  }
+
+  return {
+    alt:
+      image.info?.description || image.info?.title || image.name || undefined,
+    src: image.url || undefined,
+  };
+}
+
+/**
+ * Returns the props for an <img /> html tag for a gallery image.
+ *
+ * @param {GalleryImage|null|undefined} image The input image.
+ *
+ * @returns {Record<string,any>} The props for the tag.
+ */
+export function getImgPropsFromGallaryImage(
+  image: GalleryImage | null | undefined
+): Record<string, any> {
+  return getImgPropsFromApiImage(image?.apiImage);
+}
+
 /**
  * Converts a value to a string that can be used as search value.
  *
