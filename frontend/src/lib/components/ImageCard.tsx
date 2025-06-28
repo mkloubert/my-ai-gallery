@@ -117,6 +117,7 @@ const ImageCard: React.FC<ImageCardProps> = ({
 
   useEffect(() => {
     updateTags();
+
     // eslint-disable-next-line
   }, []);
 
@@ -161,7 +162,6 @@ const ImageCard: React.FC<ImageCardProps> = ({
             <ThreeDots width={24} height={24} />
           </button>
 
-          {/* Kontextmenü */}
           {isMenuOpen && (
             <div
               className="absolute right-0 bottom-10 min-w-[150px] rounded-lg shadow-lg bg-white border border-gray-200 p-2 space-y-1 z-20"

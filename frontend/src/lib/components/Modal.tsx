@@ -49,7 +49,6 @@ const Modal: React.FC<ModalProps> = ({ onClose, open, title = "", children, acti
   if (!open) return null;
 
   return (
-    // Overlay
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
       onClick={() => onClose?.()}
@@ -57,7 +56,6 @@ const Modal: React.FC<ModalProps> = ({ onClose, open, title = "", children, acti
       aria-modal="true"
       role="dialog"
     >
-      {/* Modal */}
       <div
         className="bg-white rounded-lg shadow-xl max-w-lg w-full p-6 relative"
         onClick={e => e.stopPropagation()}

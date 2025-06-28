@@ -80,7 +80,7 @@ const App: React.FC = () => {
       });
 
       setAllImages(galleryImages);
-      refreshList(galleryImages, searchParts, searchValue); // initial aufbauen
+      refreshList(galleryImages, searchParts);
     } finally {
       setIsLoading(false);
 
@@ -109,7 +109,6 @@ const App: React.FC = () => {
     (
       images: GalleryImage[] = allImages,
       parts: string[] = searchParts,
-      value: string = searchValue
     ) => {
       let filtered = images;
       if (parts.length > 0) {
@@ -120,6 +119,7 @@ const App: React.FC = () => {
       setFilteredImages(filtered);
       setPage(1);
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [allImages, searchParts, searchValue]
   );
 
@@ -159,7 +159,7 @@ const App: React.FC = () => {
     const value = String(v ?? "");
     setSearchValue(value);
     const parts = rebuildSearchParts(value);
-    refreshList(allImages, parts, value);
+    refreshList(allImages, parts);
   };
 
   const updateSearchValueWithTag = (tag: string) => {
@@ -241,11 +241,12 @@ const App: React.FC = () => {
   useEffect(() => {
     if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
     debounceTimeout.current = setTimeout(() => {
-      refreshList(allImages, searchParts, searchValue);
+      refreshList(allImages, searchParts);
     }, 300);
     return () => {
       if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
     };
+
     // eslint-disable-next-line
   }, [searchValue]);
 
