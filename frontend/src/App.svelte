@@ -29,7 +29,6 @@
   import ArrowUp from "./assets/ArrowUp.svelte";
   import ImageCard from "./lib/ImageCard.svelte";
   import ImageCarouselModal from "./lib/ImageCarouselModal.svelte";
-  import Search from "./assets/Search.svelte";
 
   const pageSize = 100;
 
@@ -39,6 +38,7 @@
   let filteredImages: GalleryImage[] = [];
   let inputEl: any;
   let isLoading = true;
+  let isSearchOpen = false;
   let page = 1;
   let searchParts: string[] = [];
   let sentinel: any;
@@ -91,8 +91,27 @@
     }
   };
 
+  const handleGlobalHotkey = (e: KeyboardEvent) => {
+    // CMD+Space (Mac) or CTRL+Space
+    if ((e.metaKey || e.ctrlKey) && e.code === "Space" && !isSearchOpen) {
+      e.preventDefault();
+
+      isSearchOpen = true;
+    } else if (e.code === "Escape") {
+      isSearchOpen = false;
+    }
+  };
+
   const handleSearchValueChange = (e: any) => {
     updateSearchValue((e.target as HTMLInputElement).value);
+  };
+
+  const handleWindowClick = (event: MouseEvent) => {
+    if (inputEl?.contains(event.target as Node)) {
+      // ignore
+    } else {
+      isSearchOpen = false;
+    }
   };
 
   const loadMore = () => {
@@ -185,15 +204,22 @@
 
     fetchImages().catch(console.error);
 
+    window.addEventListener("keydown", handleGlobalHotkey);
+    window.addEventListener("mousedown", handleWindowClick);
+
     return () => {
       observer.disconnect();
     };
   });
 
   onDestroy(() => {
+    window.removeEventListener("mousedown", handleWindowClick);
+    window.removeEventListener("keydown", handleGlobalHotkey);
+
     sentinelObserver?.disconnect();
   });
 
+  $: if (isSearchOpen && inputEl) setTimeout(() => inputEl?.focus(), 10);
   $: searchValue = "";
   $: visibleImages = filteredImages.slice(0, page * pageSize);
   $: if (searchValue || !searchValue) {
@@ -214,25 +240,6 @@
     />
   </div>
 {:else}
-  <div class="w-full flex justify-center mt-4">
-    <div class="relative w-full max-w-md">
-      <Search
-        cssClass={"absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none"}
-      />
-
-      <input
-        type="text"
-        class="pl-10 pr-4 py-2 w-full rounded-lg border border-gray-300 bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
-        placeholder="Search ..."
-        oninput={handleSearchValueChange}
-        autofocus
-        disabled={isLoading}
-        value={searchValue}
-        bind:this={inputEl}
-      />
-    </div>
-  </div>
-
   <div class="py-2 w-full justify-center items-center flex text-sm">
     {filteredImages.length} found
   </div>
@@ -275,3 +282,30 @@
   start={currentCarouselIndex ?? 0}
   open={typeof currentCarouselIndex === "number"}
 />
+
+{#if isSearchOpen}
+  <div
+    class="fixed top-6 left-1/2 z-50 -translate-x-1/2 w-full max-w-xl shadow-2xl"
+  >
+    <div
+      class="relative rounded-xl bg-white p-3 border border-gray-200 flex items-center shadow-xl"
+    >
+      <svg
+        class="w-6 h-6 mr-2 text-gray-400"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        viewBox="0 0 24 24"
+      >
+        <circle cx="11" cy="11" r="8" />
+        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+      </svg>
+      <input
+        class="w-full bg-transparent text-xl text-gray-900 focus:outline-none"
+        placeholder="Search ..."
+        oninput={handleSearchValueChange}
+        bind:this={inputEl}
+      />
+    </div>
+  </div>
+{/if}
