@@ -1,9 +1,4 @@
 <script lang="ts">
-  import ArrowLeft from "../assets/ArrowLeft.svelte";
-  import ArrowRight from "../assets/ArrowRight.svelte";
-  import type { GalleryImage } from "./types";
-  import { getImgPropsFromGallaryImage } from "./utils";
-
   // MIT License
   //
   // Copyright (c) 2025 Marcel Joachim Kloubert (https://marcel.coffee)
@@ -25,6 +20,12 @@
   // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
   // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   // SOFTWARE.
+
+  import type { GalleryImage } from "../types";
+  import { getImgPropsFromGallaryImage } from "../utils";
+
+  import ArrowLeft from "../../assets/ArrowLeft.svelte";
+  import ArrowRight from "../../assets/ArrowRight.svelte";
 
   export let images: GalleryImage[] = [];
   export let open = false;
@@ -71,6 +72,7 @@
 {#if open}
   <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
   <!-- svelte-ignore a11y_no_static_element_interactions -->
+  <!-- svelte-ignore a11y_autofocus -->
   <div
     class="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm"
     tabindex="0"

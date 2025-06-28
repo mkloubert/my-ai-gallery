@@ -22,7 +22,8 @@
   // SOFTWARE.
 
   import { onMount } from "svelte";
-  import X from "../assets/X.svelte";
+
+  import X from "../../assets/X.svelte";
 
   export let onClose: (() => void) | null;
   export let open = false;

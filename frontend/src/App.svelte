@@ -23,12 +23,12 @@
 
   import { onDestroy, onMount } from "svelte";
 
+  import ImageCard from "./lib/components/ImageCard.svelte";
+  import ImageCarouselModal from "./lib/components/ImageCarouselModal.svelte";
   import type { ApiImage, GalleryImage } from "./lib/types";
   import { toSearchValue } from "./lib/utils";
 
   import ArrowUp from "./assets/ArrowUp.svelte";
-  import ImageCard from "./lib/ImageCard.svelte";
-  import ImageCarouselModal from "./lib/ImageCarouselModal.svelte";
 
   const pageSize = 100;
 
@@ -235,6 +235,7 @@
 
 {#if isLoading}
   <div class="flex justify-center items-center w-full h-lvh">
+    <!-- svelte-ignore element_invalid_self_closing_tag -->
     <div
       class="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-blue-500"
     />

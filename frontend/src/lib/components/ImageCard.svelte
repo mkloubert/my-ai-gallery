@@ -23,29 +23,26 @@
 
   import { onMount } from "svelte";
 
-  import type { ApiImage, UpdateImageMetaDataResponse } from "./types";
+  import type { ApiImage, UpdateImageMetaDataResponse } from "../types";
 
-  import ThreeDots from "../assets/ThreeDots.svelte";
+  import ThreeDots from "../../assets/ThreeDots.svelte";
   import Modal from "./Modal.svelte";
+  import ImageCardTagList from "./ImageCardTagList.svelte";
 
   export let image: ApiImage;
   export let onImageClick: () => void;
   export let onTagClick: (tag: string) => void;
   export let onUpdate: () => void;
 
-  let isUpdatingMeta = false;
-  let menuOpen = false;
-  let tags: string[] = [];
-
   const handleBlur = (event: any) => {
     // check if focus is outside
     if (!event.currentTarget.contains(event.relatedTarget)) {
-      menuOpen = false;
+      isMenuOpen = false;
     }
   };
 
   const doDownload = () => {
-    menuOpen = false;
+    isMenuOpen = false;
 
     window.open(image.url, "_blank");
   };
@@ -86,7 +83,7 @@
   };
 
   const showDetails = () => {
-    menuOpen = false;
+    isMenuOpen = false;
 
     updateDetails();
   };
@@ -98,7 +95,7 @@
     title = image.info?.title || image.name;
   };
 
-  onMount(() => {
+  const updateTags = () => {
     const allTags: string[] = (image.info?.tags ?? [])
       .flatMap((t) => {
         return t.split(",").map((t2) => t2.trim());
@@ -108,9 +105,16 @@
       });
 
     tags = [...new Set(allTags)].sort();
+  };
+
+  onMount(() => {
+    updateTags();
   });
 
   $: detailsToShow = "";
+  $: isMenuOpen = false;
+  $: isUpdatingMeta = false;
+  $: tags = [] as string[];
   $: title = image.info?.title || image.name;
 </script>
 
@@ -131,30 +135,19 @@
     on:click={() => onImageClick()}
   />
 
-  {#if tags.length}
-    <div
-      class="absolute bottom-2 left-2 flex flex-wrap gap-1"
-      style="z-index: 10;"
-    >
-      {#each tags as tag}
-        <!-- svelte-ignore a11y_click_events_have_key_events -->
-        <!-- svelte-ignore a11y_no_static_element_interactions -->
-        <span
-          class="cursor-pointer px-2 py-0.5 text-xs rounded-full bg-white/80 dark:bg-gray-800/80 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-700 shadow"
-          on:click={() => onTagClick(tag)}
-        >
-          {tag}
-        </span>
-      {/each}
-    </div>
-  {/if}
+  <ImageCardTagList
+      {onTagClick}
+      {tags}
+  />
 
   <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
   <div class="absolute bottom-2 right-2 z-10" tabindex="0" on:blur={handleBlur}>
     <button
       class="bg-black/40 text-white rounded-full p-2 hover:bg-black/70 focus:outline-none cursor-pointer"
       style="z-index: 20;"
-      on:click={() => (menuOpen = !menuOpen)}
+      on:click={() => {
+        isMenuOpen = !isMenuOpen;
+      }}
       aria-label="Context menu"
       tabindex="0"
     >
@@ -162,7 +155,7 @@
     </button>
 
     <!-- context menu -->
-    {#if menuOpen}
+    {#if isMenuOpen}
       <div
         class="absolute right-0 bottom-10 min-w-[150px] rounded-lg shadow-lg bg-white border border-gray-200 p-2 space-y-1 z-20"
       >
@@ -185,9 +178,11 @@
 </div>
 
 <Modal
-  onClose={isUpdatingMeta ? null : () => {
-    detailsToShow = "";
-  }}
+  onClose={isUpdatingMeta
+    ? null
+    : () => {
+        detailsToShow = "";
+      }}
   open={!!detailsToShow}
   {title}
 >
@@ -198,7 +193,7 @@
   <div slot="actions" class="w-full">
     <button
       disabled={isUpdatingMeta}
-      class={`px-3 py-1 rounded ${isUpdatingMeta ? "bg-gray-500": "bg-blue-500"} text-white cursor-pointer w-full ${isUpdatingMeta ? "italic" : ""}`}
+      class={`px-3 py-1 rounded ${isUpdatingMeta ? "bg-gray-500" : "bg-blue-500"} text-white cursor-pointer w-full ${isUpdatingMeta ? "italic" : ""}`}
       on:click={doMetaUpdate}
     >
       {isUpdatingMeta ? "Updating ..." : "Update"}
