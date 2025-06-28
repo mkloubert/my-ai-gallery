@@ -20,12 +20,15 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import { mount } from "svelte";
-import "./app.css";
-import App from "./App.svelte";
+import { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
 
-const app = mount(App, {
-  target: document.getElementById("app")!,
-});
+import App from './App.tsx'
 
-export default app;
+import './index.css'
+
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <App />
+  </StrictMode>,
+)

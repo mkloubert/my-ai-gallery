@@ -31,6 +31,7 @@ import type { ApiImage, GalleryImage } from "./types";
  */
 export function getImgPropsFromApiImage(
   image: ApiImage | null | undefined
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Record<string, any> {
   if (!image) {
     return {};
@@ -52,6 +53,7 @@ export function getImgPropsFromApiImage(
  */
 export function getImgPropsFromGallaryImage(
   image: GalleryImage | null | undefined
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Record<string, any> {
   return getImgPropsFromApiImage(image?.apiImage);
 }
